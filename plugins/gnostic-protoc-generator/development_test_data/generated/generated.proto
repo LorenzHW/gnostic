@@ -1,0 +1,26 @@
+// GENERATED FILE: DO NOT EDIT!
+
+syntax = "proto3";
+import "google/api/annotations.proto";
+package generated;
+
+service Generated{
+  rpc ListPets (ListPetsRequest) returns (ListPetsResponse) {
+    option (google.api.http) = {
+      get: "/path"
+    };
+  }
+
+  rpc CreatePets (CreatePetsRequest) returns (CreatePetsResponse) {
+    option (google.api.http) = {
+      get: "/path"
+    };
+  }
+
+  rpc ShowPetById (ShowPetByIdRequest) returns (ShowPetByIdResponse) {
+    option (google.api.http) = {
+      get: "/path"
+    };
+  }
+
+}
