@@ -15,6 +15,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 
 	surface "github.com/googleapis/gnostic/surface"
@@ -34,6 +35,7 @@ func ParameterList(parametersType *surface.Type) string {
 func (renderer *Renderer) RenderProto() ([]byte, error) {
 	f := NewLineWriter()
 
+	// TODO: print license
 	f.WriteLine("// GENERATED FILE: DO NOT EDIT!")
 	f.WriteLine(``)
 	f.WriteLine(`syntax = "proto3";`)
@@ -41,31 +43,52 @@ func (renderer *Renderer) RenderProto() ([]byte, error) {
 	f.WriteLine(`package ` + renderer.Package + `;`)
 	f.WriteLine(``)
 
-	defineRPCservice(f, renderer)
+	renderRPCservice(f, renderer)
+	f.WriteLine(``)
+	renderMessages(f, renderer)
 
 	return f.Bytes(), nil
 }
 
-func renderRPCsignature(f *LineWriter, methodName string) {
-	requestName := methodName + "Request"
-	responseName := methodName + "Response"
-	f.WriteLine(`  rpc ` + methodName + ` (` + requestName + `) ` + `returns` + ` (` + responseName + `) {`)
-}
-
-func renderOptions(f *LineWriter) {
-	f.WriteLine(`    option (google.api.http) = {`)
-	f.WriteLine(`      get: "/path"`)
-	f.WriteLine(`    };`)
-}
-
-func defineRPCservice(f *LineWriter, renderer *Renderer) {
-
-	f.WriteLine(`service ` + strings.Title(renderer.Package) + `{`)
+func renderRPCservice(f *LineWriter, renderer *Renderer) {
+	f.WriteLine(`service ` + strings.Title(renderer.Package) + ` {`)
 	for _, method := range renderer.Model.Methods {
-		renderRPCsignature(f, method.Name)
-		renderOptions(f)
+		renderRPCsignature(f, method)
+		renderOptions(f, method)
 		f.WriteLine(`  }`) // Closing bracket of method
 		f.WriteLine(``)
 	}
-	f.WriteLine(`}`)
+	f.WriteLine(`}`) // Closing bracket of RPC service
+}
+
+func renderRPCsignature(f *LineWriter, method *surface.Method) {
+	f.WriteLine(`  rpc ` + method.Name + ` (` + method.ParametersTypeName + `) ` + `returns` + ` (` + method.ResponsesTypeName + `) {`)
+}
+
+func renderOptions(f *LineWriter, method *surface.Method) {
+	f.WriteLine(`    option (google.api.http) = {`)
+	f.WriteLine(`      ` + strings.ToLower(method.Method) + `: "` + method.Path + `"`)
+	f.WriteLine(`    };`)
+}
+
+func renderMessages(f *LineWriter, renderer *Renderer) {
+	for _, t := range renderer.Model.Types {
+		f.WriteLine(`message ` + t.Name + ` {`)
+		for i, field := range t.Fields {
+			messageFieldName := field.Name
+
+			// Field is a HTTP 200 response
+			if messageFieldName == "200" {
+				// TODO: Better name for field. If it is a non primitive type (e.g.: pet) name field like that
+				// TODO: This will be rendered twice inside if the .proto file,
+				// TODO: because once for application/json and once for application/xml
+				messageFieldName = "http_200_ok"
+			}
+
+			f.WriteLine(`  ` + field.NativeType + ` ` + messageFieldName + ` = ` + strconv.Itoa(i+1) + `;`)
+		}
+		f.WriteLine(`}`)
+		f.WriteLine(``)
+	}
+
 }
