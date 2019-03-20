@@ -49,7 +49,8 @@ func main() {
 			err = proto.Unmarshal(model.Value, surfaceModel)
 			if err == nil {
 				// Customize the code surface model for Go
-				// NewGoLanguageModel().Prepare(surfaceModel)
+				NewGoLanguageModel().Prepare(surfaceModel)
+
 				modelJSON, _ := json.MarshalIndent(surfaceModel, "", "  ")
 				modelFile := &plugins.File{Name: "model.json", Data: modelJSON}
 				env.Response.Files = append(env.Response.Files, modelFile)
