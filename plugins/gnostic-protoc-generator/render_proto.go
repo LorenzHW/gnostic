@@ -76,16 +76,20 @@ func renderMessages(f *LineWriter, renderer *Renderer) {
 		f.WriteLine(`message ` + t.Name + ` {`)
 		for i, field := range t.Fields {
 			messageFieldName := field.Name
+			//TODO: handle enum
 
 			// Field is a HTTP 200 response
 			if messageFieldName == "200" {
-				// TODO: Better name for field. If it is a non primitive type (e.g.: pet) name field like that
-				// TODO: This will be rendered twice inside if the .proto file,
-				// TODO: because once for application/json and once for application/xml
-				messageFieldName = "http_200_ok"
+				// TODO: Better name for field. If it is a non primitive type (e.g.: pet) name field like that?
+				// TODO: If there is also application/xml --> this will be rendered twice inside .proto
+				messageFieldName = "response"
 			}
 
-			f.WriteLine(`  ` + field.NativeType + ` ` + messageFieldName + ` = ` + strconv.Itoa(i+1) + `;`)
+			if field.Kind == surface.FieldKind_ARRAY {
+				f.WriteLine(`  ` + `repeated ` + field.NativeType + ` ` + messageFieldName + ` = ` + strconv.Itoa(i+1) + `;`)
+			} else {
+				f.WriteLine(`  ` + field.NativeType + ` ` + messageFieldName + ` = ` + strconv.Itoa(i+1) + `;`)
+			}
 		}
 		f.WriteLine(`}`)
 		f.WriteLine(``)
