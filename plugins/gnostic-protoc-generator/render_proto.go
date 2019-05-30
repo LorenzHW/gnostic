@@ -39,7 +39,10 @@ func (renderer *Renderer) RenderProto() ([]byte, error) {
 	f.WriteLine("// GENERATED FILE: DO NOT EDIT!")
 	f.WriteLine(``)
 	f.WriteLine(`syntax = "proto3";`)
+	f.WriteLine(``)
 	f.WriteLine(`import "google/api/annotations.proto";`)
+	f.WriteLine(`import "google/protobuf/empty.proto";`)
+	f.WriteLine(``)
 	f.WriteLine(`package ` + renderer.Package + `;`)
 	f.WriteLine(``)
 
@@ -62,6 +65,14 @@ func renderRPCservice(f *LineWriter, renderer *Renderer) {
 }
 
 func renderRPCsignature(f *LineWriter, method *surface.Method) {
+	if method.ResponsesTypeName == "" {
+		method.ResponsesTypeName = "google.protobuf.Empty"
+	}
+
+	if method.ParametersTypeName == "" {
+		method.ParametersTypeName = "google.protobuf.Empty"
+	}
+
 	f.WriteLine(`  rpc ` + method.Name + ` (` + method.ParametersTypeName + `) ` + `returns` + ` (` + method.ResponsesTypeName + `) {`)
 }
 
