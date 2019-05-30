@@ -230,7 +230,6 @@ func (b *OpenAPI3Builder) buildTypeFromResponses(
 		if response != nil && response.GetContent() != nil {
 			for _, pair2 := range response.GetContent().GetAdditionalProperties() {
 				f.Kind, f.Type, f.Format = b.typeForSchemaOrReference(pair2.GetValue().GetSchema())
-				f.Kind = FieldKind_REFERENCE
 				t.addField(&f)
 			}
 		}
@@ -256,7 +255,7 @@ func (b *OpenAPI3Builder) typeForSchemaOrReference(value *openapiv3.SchemaOrRefe
 		return b.typeForSchema(value.GetSchema())
 	}
 	if value.GetReference() != nil {
-		return FieldKind_SCALAR, typeForRef(value.GetReference().XRef), ""
+		return FieldKind_REFERENCE, typeForRef(value.GetReference().XRef), ""
 	}
 	return FieldKind_SCALAR, "todo", ""
 }
