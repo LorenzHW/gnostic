@@ -1,0 +1,90 @@
+{
+  "name": "Test API for GSoC project",
+  "types": [
+    {
+      "name": "ComponentExampleObjectPerson",
+      "description": "implements the service definition of ComponentExampleObjectPerson",
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "format": "int64",
+          "nativeType": "int64",
+          "fieldName": "Id",
+          "parameterName": "id",
+          "serialize": true
+        },
+        {
+          "name": "age",
+          "type": "integer",
+          "format": "int64",
+          "nativeType": "int64",
+          "fieldName": "Age",
+          "parameterName": "age",
+          "serialize": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "nativeType": "string",
+          "fieldName": "Name",
+          "parameterName": "name",
+          "serialize": true
+        },
+        {
+          "name": "photoUrls",
+          "type": "string",
+          "kind": 2,
+          "nativeType": "string",
+          "fieldName": "PhotoUrls",
+          "parameterName": "photoUrls",
+          "serialize": true
+        }
+      ],
+      "typeName": "ComponentExampleObjectPerson"
+    },
+    {
+      "name": "ComponentExampleParameter",
+      "description": "ComponentExampleParameter holds parameters to ComponentExampleParameter",
+      "fields": [
+        {
+          "name": "param1",
+          "type": "integer",
+          "format": "int64",
+          "position": 3,
+          "nativeType": "int64",
+          "fieldName": "Param1",
+          "parameterName": "param1",
+          "serialize": true
+        }
+      ],
+      "typeName": "ComponentExampleParameter"
+    },
+    {
+      "name": "TestResponseNativeResponses",
+      "description": "TestResponseNativeResponses holds responses of TestResponseNative",
+      "fields": [
+        {
+          "name": "200",
+          "type": "string",
+          "nativeType": "string",
+          "fieldName": "OK",
+          "parameterName": "200"
+        }
+      ],
+      "typeName": "TestResponseNativeResponses"
+    }
+  ],
+  "methods": [
+    {
+      "operation": "testResponseNative",
+      "path": "/testResponseNative",
+      "method": "GET",
+      "name": "TestResponseNative",
+      "handlerName": "HandleTestResponseNative",
+      "processorName": "TestResponseNative",
+      "clientName": "TestResponseNative",
+      "responsesTypeName": "TestResponseNativeResponses"
+    }
+  ]
+}

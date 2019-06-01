@@ -13,7 +13,7 @@ info:
     #TODO: ADD TESTS FOR components/requestBodies
 
 paths:
-#    ########################## PARAMETER ##########################
+  ########################## PARAMETER ##########################
 #  /testParameterQuery:
 #    get:
 #      operationId: testParameterQuery
@@ -91,26 +91,26 @@ paths:
 #      responses:
 #        200:
 #          description: success
-
-  /testParameterReference: #TODO: Does not work
-    get:
-      operationId: testParameterReference
-      parameters:
-        $ref: '#/components/parameters/Param1'
-      responses:
-        200:
-          description: success
-#    ########################## RESPONE ##########################
-#  /testResponseNative:
+#
+#  /testParameterReference:
 #    get:
-#      operationId: testResponseNative
+#      operationId: testParameterReference
+#      parameters:
+#        - $ref: '#/components/parameters/ComponentExampleParameter'
 #      responses:
 #        200:
-#          description: succes
-#          content:
-#            application/json:
-#              schema:
-#                type: string
+#          description: success
+    ########################## RESPONE ##########################
+  /testResponseNative:
+    get:
+      operationId: testResponseNative
+      responses:
+        200:
+          description: succes
+          content:
+            application/json:
+              schema:
+                type: string
 #  /testResponseReference:
 #    get:
 #      operationId: testResponseReference
@@ -120,7 +120,7 @@ paths:
 #          content:
 #            application/json:
 #              schema:
-#                $ref: '#/components/schemas/ExampleObjectPerson'
+#                $ref: '#/components/schemas/ComponentExampleObjectPerson'
 #  /testResponseMultipleContent:
 #    get:
 #      operationId: testResponseMultipleContent
@@ -130,11 +130,12 @@ paths:
 #          content:
 #            application/json:
 #              schema:
-#                $ref: '#/components/schemas/ExampleObjectPerson'
+#                $ref: '#/components/schemas/ComponentExampleObjectPerson'
 #            application/xml:
 #              schema:
-#                $ref: '#/components/schemas/ExampleObjectPerson'
-#
+#                $ref: '#/components/schemas/ComponentExampleObjectPerson'
+#        400:
+#          description: failure
 #  /testResponse400StatusCode: #TODO: How should error responses be handled? Can they also have content?
 #    get:
 #      operationId: testResponseMultipleContent
@@ -178,7 +179,7 @@ paths:
 #    ########################## END ##########################
 components:
   schemas:
-    ExampleObjectPerson:
+    ComponentExampleObjectPerson:
       type: object
       required:
         - name
@@ -203,7 +204,7 @@ components:
       xml:
         name: Pet
   parameters:
-    Param1:
+    ComponentExampleParameter:
       name: param1
       in: query
       schema:
