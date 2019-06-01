@@ -21,17 +21,6 @@ import (
 	surface "github.com/googleapis/gnostic/surface"
 )
 
-// ParameterList returns a string representation of a method's parameters
-func ParameterList(parametersType *surface.Type) string {
-	result := ""
-	if parametersType != nil {
-		for _, field := range parametersType.Fields {
-			result += field.ParameterName + " " + field.NativeType + "," + "\n"
-		}
-	}
-	return result
-}
-
 func (renderer *Renderer) RenderProto() ([]byte, error) {
 	f := NewLineWriter()
 
@@ -47,8 +36,9 @@ func (renderer *Renderer) RenderProto() ([]byte, error) {
 	f.WriteLine(``)
 
 	renderRPCservice(f, renderer)
-	f.WriteLine(``)
-	renderMessages(f, renderer)
+	renderRequestParameters(f, renderer)
+	renderResponses(f, renderer)
+	renderComponents(f, renderer)
 
 	return f.Bytes(), nil
 }
@@ -62,6 +52,7 @@ func renderRPCservice(f *LineWriter, renderer *Renderer) {
 		f.WriteLine(``)
 	}
 	f.WriteLine(`}`) // Closing bracket of RPC service
+	f.WriteLine(``)
 }
 
 func renderRPCsignature(f *LineWriter, method *surface.Method) {
@@ -82,28 +73,118 @@ func renderOptions(f *LineWriter, method *surface.Method) {
 	f.WriteLine(`    };`)
 }
 
-func renderMessages(f *LineWriter, renderer *Renderer) {
+func renderRequestParameters(f *LineWriter, renderer *Renderer) {
 	for _, t := range renderer.Model.Types {
-		f.WriteLine(`message ` + t.Name + ` {`)
-		for i, field := range t.Fields {
-			messageFieldName := field.Name
-			//TODO: handle enum
-
-			// Field is a HTTP 200 response
-			if messageFieldName == "200" {
-				// TODO: Better name for field. If it is a non primitive type (e.g.: pet) name field like that?
-				// TODO: If there is also application/xml --> this will be rendered twice inside .proto
-				messageFieldName = "response"
+		if strings.Contains(t.Name, "Parameters") {
+			lines := make([]string, 0)
+			protobufFieldNumberCounter := 1
+			for _, field := range t.Fields {
+				if field.Kind == surface.FieldKind_REFERENCE {
+					// We got a reference to a parameter
+					// According to: https://github.com/googleapis/googleapis/blob/a8ee1416f4c588f2ab92da72e7c1f588c784d3e6/google/api/http.proto#L62
+					// it is not allowed to have non-primitive types. hence we flatten it:
+					fieldType := getTypeForName(field.Type, renderer.Model.Types)
+					for _, f := range fieldType.Fields {
+						l := getFieldLine(f.Kind, f.NativeType, f.Name, protobufFieldNumberCounter)
+						protobufFieldNumberCounter += 1
+						lines = append(lines, l)
+					}
+				} else {
+					l := getFieldLine(field.Kind, field.NativeType, field.Name, protobufFieldNumberCounter)
+					protobufFieldNumberCounter += 1
+					lines = append(lines, l)
+				}
 			}
-
-			if field.Kind == surface.FieldKind_ARRAY {
-				f.WriteLine(`  ` + `repeated ` + field.NativeType + ` ` + messageFieldName + ` = ` + strconv.Itoa(i+1) + `;`)
-			} else {
-				f.WriteLine(`  ` + field.NativeType + ` ` + messageFieldName + ` = ` + strconv.Itoa(i+1) + `;`)
-			}
+			renderMessages(f, t.Name, lines)
 		}
-		f.WriteLine(`}`)
-		f.WriteLine(``)
 	}
-
+	f.WriteLine(``)
 }
+
+func renderResponses(f *LineWriter, renderer *Renderer) {
+	for _, t := range renderer.Model.Types {
+		if strings.Contains(t.Name, "Responses") {
+			lines := make([]string, 0)
+			fields := removeDuplicates(t.Fields)
+			for i, field := range fields {
+				l := getFieldLine(field.Kind, field.NativeType, field.FieldName, i+1)
+				lines = append(lines, l)
+			}
+			renderMessages(f, t.Name, lines)
+		}
+	}
+	f.WriteLine(``)
+}
+
+func renderComponents(f *LineWriter, renderer *Renderer) {
+	for _, t := range renderer.Model.Types {
+		if !strings.Contains(t.Name, "Parameters") && !strings.Contains(t.Name, "Responses") {
+			lines := make([]string, 0)
+			for i, field := range t.Fields {
+				l := getFieldLine(field.Kind, field.NativeType, field.Name, i+1)
+				lines = append(lines, l)
+			}
+			renderMessages(f, t.Name, lines)
+			f.WriteLine(``)
+		}
+	}
+}
+
+func renderMessages(f *LineWriter, messageName string, fields []string) {
+	f.WriteLine(`message ` + messageName + ` {`)
+	for _, field := range fields {
+		f.WriteLine(field)
+	}
+	f.WriteLine(`}`)
+}
+
+func getFieldLine(kind surface.FieldKind, nativeType string, fieldName string, counter int) (l string) {
+	if kind == surface.FieldKind_ARRAY {
+		l = `  ` + `repeated ` + nativeType + ` ` + fieldName + ` = ` + strconv.Itoa(counter) + `;`
+	} else {
+		l = `  ` + nativeType + ` ` + fieldName + ` = ` + strconv.Itoa(counter) + `;`
+	}
+	return l
+}
+
+func getTypeForName(name string, types []*surface.Type) (t *surface.Type) {
+	for _, t := range types {
+		if t.Name == name {
+			return t
+		}
+	}
+	return nil
+}
+
+func removeDuplicates(fields []*surface.Field) (result []surface.Field) {
+	// It is possible that the OpenAPI description has responses with multiple
+	// formats (e.g.: application/json and application/xml), if that is the
+	// case we only want to create on field inside our protobuf file,
+	// therefore we remove the duplicates
+	alreadyAdded := make(map[string]bool)
+	for _, f := range fields {
+		if !alreadyAdded[f.Name] {
+			result = append(result, *f)
+			alreadyAdded[f.Name] = true
+		}
+	}
+	return result
+}
+
+// TODO: Referencing a $ref parameter does not work: In surface model now --> render correctly (native fields)
+// TODO: Print description / summary of field names
+// TODO: Add requestbodies
+// TODO: documentation of functions
+
+// WATCH OUT FOR:
+// The path template may refer to one or more fields in the gRPC request message, as long
+// as each field is a non-repeated field with a primitive (non-message) type.
+// see: https://github.com/googleapis/googleapis/blob/a8ee1416f4c588f2ab92da72e7c1f588c784d3e6/google/api/http.proto#L62
+// AND:
+// Note that fields which are mapped to URL query parameters must have a
+// primitive type or a repeated primitive type or a non-repeated message type.
+// see: https://github.com/googleapis/googleapis/blob/a8ee1416f4c588f2ab92da72e7c1f588c784d3e6/google/api/http.proto#L119
+
+//TODO: handle enum
+//TODO: Watch out for: https://github.com/googleapis/googleapis/blob/152dabdfea620675c2db2f2a74878572324e8fd2/google/api/http.proto#L308
+//TODO: Not sure if possible
