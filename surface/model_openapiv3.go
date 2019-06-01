@@ -51,9 +51,26 @@ func (b *OpenAPI3Builder) buildModel(document *openapiv3.Document) (*Model, erro
 
 // build builds an API service description, preprocessing its types and methods for code generation.
 func (b *OpenAPI3Builder) build(document *openapiv3.Document) (err error) {
+	err = b.buildTypesFromComponents(document.Components)
+	if err != nil {
+		return err
+	}
+
+	// Collect service method descriptions from each PathItem.
+	if document.Paths != nil {
+		for _, pair := range document.Paths.Path {
+			b.buildMethodFromPathItem(pair.Name, pair.Value)
+		}
+	}
+	return err
+}
+
+// buildTypesFromComponents builds multiple service type description from the "Components" section
+// in the OpenAPI specification.
+func (b *OpenAPI3Builder) buildTypesFromComponents(components *openapiv3.Components) (err error) {
 	// Collect service type descriptions from Components/Schemas.
-	if document.Components != nil && document.Components.Schemas != nil {
-		for _, pair := range document.Components.Schemas.AdditionalProperties {
+	if components != nil && components.Schemas != nil {
+		for _, pair := range components.Schemas.AdditionalProperties {
 			t, err := b.buildTypeFromSchemaOrReference(pair.Name, pair.Value)
 			if err != nil {
 				return err
@@ -64,8 +81,8 @@ func (b *OpenAPI3Builder) build(document *openapiv3.Document) (err error) {
 		}
 	}
 	// Collect service type descriptions from Components/Parameters.
-	if document.Components != nil && document.Components.Parameters != nil {
-		for _, pair := range document.Components.Parameters.AdditionalProperties {
+	if components != nil && components.Parameters != nil {
+		for _, pair := range components.Parameters.AdditionalProperties {
 			parameters := []*openapiv3.ParameterOrReference{pair.Value}
 			_, err := b.buildTypeFromParameters(pair.Name, parameters, nil, true)
 			if err != nil {
@@ -73,13 +90,7 @@ func (b *OpenAPI3Builder) build(document *openapiv3.Document) (err error) {
 			}
 		}
 	}
-	// Collect service method descriptions from each PathItem.
-	if document.Paths != nil {
-		for _, pair := range document.Paths.Path {
-			b.buildMethodFromPathItem(pair.Name, pair.Value)
-		}
-	}
-	return err
+	return nil
 }
 
 // buildTypeFromSchemaOrReference builds a service type description from a schema in the API description.
