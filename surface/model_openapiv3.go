@@ -63,6 +63,16 @@ func (b *OpenAPI3Builder) build(document *openapiv3.Document) (err error) {
 			}
 		}
 	}
+	// Collect service type descriptions from Components/Parameters.
+	if document.Components != nil && document.Components.Parameters != nil {
+		for _, pair := range document.Components.Parameters.AdditionalProperties {
+			parameters := []*openapiv3.ParameterOrReference{pair.Value}
+			_, err := b.buildTypeFromParameters(pair.Name, parameters, nil, true)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	// Collect service method descriptions from each PathItem.
 	if document.Paths != nil {
 		for _, pair := range document.Paths.Path {
@@ -144,7 +154,7 @@ func (b *OpenAPI3Builder) buildMethodFromPathItem(
 				m.Name = generateOperationName(method, path)
 			}
 			m.Description = op.Description
-			m.ParametersTypeName, err = b.buildTypeFromParameters(m.Name, op.Parameters, op.RequestBody)
+			m.ParametersTypeName, err = b.buildTypeFromParameters(m.Name, op.Parameters, op.RequestBody, false)
 			m.ResponsesTypeName, err = b.buildTypeFromResponses(&m, m.Name, op.Responses)
 			b.model.addMethod(&m)
 		}
@@ -156,9 +166,13 @@ func (b *OpenAPI3Builder) buildMethodFromPathItem(
 func (b *OpenAPI3Builder) buildTypeFromParameters(
 	name string,
 	parameters []*openapiv3.ParameterOrReference,
-	requestBody *openapiv3.RequestBodyOrReference) (typeName string, err error) {
+	requestBody *openapiv3.RequestBodyOrReference,
+	fromComponent bool) (typeName string, err error) {
 	t := &Type{}
 	t.Name = name + "Parameters"
+	if fromComponent {
+		t.Name = name
+	}
 	t.Description = t.Name + " holds parameters to " + name
 	t.Kind = TypeKind_STRUCT
 	t.Fields = make([]*Field, 0)
@@ -184,6 +198,12 @@ func (b *OpenAPI3Builder) buildTypeFromParameters(
 				f.Kind, f.Type, f.Format = b.typeForSchemaOrReference(parameter.GetSchema())
 			}
 			f.Serialize = true
+			t.addField(&f)
+		} else if parameterRef := parametersItem.GetReference(); parameterRef != nil {
+			f.Type = typeForRef(parameterRef.GetXRef())
+			f.Name = strings.ToLower(f.Type)
+			f.Serialize = false
+			f.Kind = FieldKind_REFERENCE
 			t.addField(&f)
 		}
 	}
