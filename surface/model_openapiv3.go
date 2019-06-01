@@ -312,10 +312,12 @@ func (b *OpenAPI3Builder) typeForSchema(schema *openapiv3.Schema) (kind FieldKin
 					a := items.GetSchemaOrReference()
 					if a[0].GetReference().GetXRef() != "" {
 						return FieldKind_ARRAY, typeForRef(a[0].GetReference().GetXRef()), format
-					} else if a[0].GetSchema().Type == "string" {
-						return FieldKind_ARRAY, "string", format
-					} else if a[0].GetSchema().Type == "object" {
-						return FieldKind_ARRAY, "object", format
+					} else {
+						// Determine whether the items of the array is a known type
+						types := map[string]bool{"string": true, "integer": true, "number": true, "boolean": true, "array": true, "object": true}
+						if types[a[0].GetSchema().Type] {
+							return FieldKind_ARRAY, a[0].GetSchema().Type, format
+						}
 					}
 				}
 			}
