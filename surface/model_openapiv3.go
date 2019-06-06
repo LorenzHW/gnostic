@@ -90,7 +90,21 @@ func (b *OpenAPI3Builder) buildTypesFromComponents(components *openapiv3.Compone
 			}
 		}
 	}
-	return nil
+	// Collect service type descriptions from Components/requestBodies
+	if components != nil && components.RequestBodies != nil {
+		for _, pair := range components.RequestBodies.AdditionalProperties {
+			t, err := b.buildTypeFromRequestBody(pair.Name, pair.Value, nil)
+
+			if err != nil {
+				return err
+			}
+			if t != nil {
+				b.model.addType(t)
+			}
+		}
+	}
+
+	return err
 }
 
 // buildTypeFromSchemaOrReference builds a service type description from a schema in the API description.
@@ -218,28 +232,50 @@ func (b *OpenAPI3Builder) buildTypeFromParameters(
 			t.addField(&f)
 		}
 	}
-	if requestBody != nil {
-		content := requestBody.GetRequestBody().GetContent()
-		if content != nil {
-			for _, pair2 := range content.GetAdditionalProperties() {
-				if pair2.Name != "application/json" {
-					log.Printf("unimplemented: %q requestBody(%s)", name, pair2.Name)
-					continue
-				}
-				var f Field
-				f.Position = Position_BODY
-				f.Kind, f.Type, f.Format = b.typeForSchemaOrReference(pair2.GetValue().GetSchema())
-				f.Name = strings.ToLower(f.Type) // use the schema name as the parameter name, since none is directly specified
-				f.Serialize = true
-				t.addField(&f)
-			}
-		}
-	}
+
+	_, err = b.buildTypeFromRequestBody(name, requestBody, t)
+
 	if len(t.Fields) > 0 {
 		b.model.addType(t)
 		return t.Name, err
 	}
 	return "", err
+}
+
+func (b *OpenAPI3Builder) buildTypeFromRequestBody(name string, requestBody *openapiv3.RequestBodyOrReference, tIn *Type) (tOut *Type, err error) {
+	if tIn == nil {
+		tOut = &Type{}
+		tOut.Name = name
+	} else {
+		tOut = tIn
+	}
+
+	if requestBody != nil {
+		content := requestBody.GetRequestBody().GetContent()
+		reference := requestBody.GetReference()
+		var f Field
+		f.Position = Position_BODY
+		f.Serialize = true
+
+		if content != nil {
+			for _, pair := range content.GetAdditionalProperties() {
+				if pair.Name != "application/json" {
+					log.Printf("unimplemented: %q requestBody(%s)", name, pair.Name)
+					continue
+				}
+				f.Kind, f.Type, f.Format = b.typeForSchemaOrReference(pair.GetValue().GetSchema())
+				f.Name = strings.ToLower(f.Type) // use the schema name as the parameter name, since none is directly specified
+				tOut.addField(&f)
+			}
+		} else if reference != nil {
+			schemaOrReference := openapiv3.SchemaOrReference{&openapiv3.SchemaOrReference_Reference{Reference: reference}}
+			f.Kind, f.Type, f.Format = b.typeForSchemaOrReference(&schemaOrReference)
+			f.Name = strings.ToLower(f.Type) // use the schema name as the parameter name, since none is directly specified
+			tOut.addField(&f)
+		}
+	}
+
+	return tOut, err
 }
 
 // buildTypeFromResponses builds a service type description from the responses of an API method

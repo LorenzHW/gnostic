@@ -7,141 +7,160 @@ info:
     will be tested and the operation object will be set accordingly.
     Structure of tests:
     /testParameter*   --> To test everything related to path/query parameteres
-    /testResponse*    --> To test everyting related to respones
+    /testResponse*    --> To test everything related to respones
+    /testRequestBody* --> To test everything related to request bodies
     others            --> Other stuff
-
-    #TODO: ADD TESTS FOR components/requestBodies
 
 paths:
   ########################## PARAMETER ##########################
-#  /testParameterQuery:
+  #  /testParameterQuery:
+  #    get:
+  #      operationId: testParameterQuery
+  #      parameters:
+  #        - name: param1
+  #          in: query
+  #          schema:
+  #            type: integer
+  #            format: int32
+  #      responses:
+  #        200:
+  #          description: success
+  #  /testParameterQueryEnum: #TODO: Does not work
+  #    get:
+  #      operationId: testParameterQueryEnum
+  #      parameters:
+  #        - name: param1
+  #          in: query
+  #          explode: true
+  #          schema:
+  #            type: array
+  #            items:
+  #              type: integer
+  #              format: int64
+  #              enum:
+  #                - 1337
+  #                - 1338
+  #                - 1339
+  #              default: 1338
+  #      responses:
+  #        200:
+  #          description: success
+  #  /testParameterPath/{param1}:
+  #    get:
+  #      operationId: testParameterPath
+  #      parameters:
+  #        - name: param1
+  #          in: path
+  #          schema:
+  #            type: string
+  #      responses:
+  #        200:
+  #          description: success
+  #  /testParameterPathEnum/{param1}: #TODO: Does not work
+  #    get:
+  #      operationId: testParameterPathEnum
+  #      parameters:
+  #        - name: param1
+  #          in: path
+  #          schema:
+  #            type: array
+  #            items:
+  #              type: integer
+  #              format: int64
+  #              enum:
+  #                - 1337
+  #                - 1338
+  #              default: 1338
+  #      responses:
+  #        200:
+  #          description: success
+  #
+  #  /testParameterMultiplePath/{param1}/{param2}:
+  #    get:
+  #      operationId: testParameterMultiplePath
+  #      parameters:
+  #        - name: param1
+  #          in: path
+  #          schema:
+  #            type: string
+  #        - name: param2
+  #          in: path
+  #          schema:
+  #            type: string
+  #      responses:
+  #        200:
+  #          description: success
+  #
+  #  /testParameterReference:
+  #    get:
+  #      operationId: testParameterReference
+  #      parameters:
+  #        - $ref: '#/components/parameters/ComponentExampleParameter'
+  #      responses:
+  #        200:
+  #          description: success
+  ########################## RESPONSE ##########################
+  #  /testResponseNative:
+  #    get:
+  #      operationId: testResponseNative
+  #      responses:
+  #        200:
+  #          description: succes
+  #          content:
+  #            application/json:
+  #              schema:
+  #                type: string
+  #  /testResponseReference:
+  #    get:
+  #      operationId: testResponseReference
+  #      responses:
+  #        200:
+  #          description: success
+  #          content:
+  #            application/json:
+  #              schema:
+  #                $ref: '#/components/schemas/ComponentExampleObjectPerson'
+  #  /testResponseMultipleContent:
+  #    get:
+  #      operationId: testResponseMultipleContent
+  #      responses:
+  #        200:
+  #          description: success
+  #          content:
+  #            application/json:
+  #              schema:
+  #                $ref: '#/components/schemas/ComponentExampleObjectPerson'
+  #            application/xml:
+  #              schema:
+  #                $ref: '#/components/schemas/ComponentExampleObjectPerson'
+  #        400:
+  #          description: failure
+  #  /testResponse400StatusCode: #TODO: How should error responses be handled? Can they also have content?
+  #    get:
+  #      operationId: testResponseMultipleContent
+  #      responses:
+  #        400:
+  #          description: error
+  #    ########################## REQUESTBODY ##########################
+#  /testRequestBody:
 #    get:
-#      operationId: testParameterQuery
-#      parameters:
-#        - name: param1
-#          in: query
-#          schema:
-#            type: integer
-#            format: int32
+#      operationId: testRequestBody
+#      requestBody:
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/ComponentExampleObjectPerson'
 #      responses:
 #        200:
 #          description: success
-#  /testParameterQueryEnum: #TODO: Does not work
-#    get:
-#      operationId: testParameterQueryEnum
-#      parameters:
-#        - name: param1
-#          in: query
-#          explode: true
-#          schema:
-#            type: array
-#            items:
-#              type: integer
-#              format: int64
-#              enum:
-#                - 1337
-#                - 1338
-#                - 1339
-#              default: 1338
-#      responses:
-#        200:
-#          description: success
-#  /testParameterPath/{param1}:
-#    get:
-#      operationId: testParameterPath
-#      parameters:
-#        - name: param1
-#          in: path
-#          schema:
-#            type: string
-#      responses:
-#        200:
-#          description: success
-#  /testParameterPathEnum/{param1}: #TODO: Does not work
-#    get:
-#      operationId: testParameterPathEnum
-#      parameters:
-#        - name: param1
-#          in: path
-#          schema:
-#            type: array
-#            items:
-#              type: integer
-#              format: int64
-#              enum:
-#                - 1337
-#                - 1338
-#              default: 1338
-#      responses:
-#        200:
-#          description: success
-#
-#  /testParameterMultiplePath/{param1}/{param2}:
-#    get:
-#      operationId: testParameterMultiplePath
-#      parameters:
-#        - name: param1
-#          in: path
-#          schema:
-#            type: string
-#        - name: param2
-#          in: path
-#          schema:
-#            type: string
-#      responses:
-#        200:
-#          description: success
-#
-#  /testParameterReference:
-#    get:
-#      operationId: testParameterReference
-#      parameters:
-#        - $ref: '#/components/parameters/ComponentExampleParameter'
-#      responses:
-#        200:
-#          description: success
-    ########################## RESPONE ##########################
-  /testResponseNative:
+  /testRequestBodyReference:
     get:
-      operationId: testResponseNative
+      operationId: testRequestBodyReference
+      requestBody:
+        $ref: '#/components/requestBodies/ComponentExampleRequestBody'
       responses:
         200:
-          description: succes
-          content:
-            application/json:
-              schema:
-                type: string
-#  /testResponseReference:
-#    get:
-#      operationId: testResponseReference
-#      responses:
-#        200:
-#          description: success
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/ComponentExampleObjectPerson'
-#  /testResponseMultipleContent:
-#    get:
-#      operationId: testResponseMultipleContent
-#      responses:
-#        200:
-#          description: success
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/ComponentExampleObjectPerson'
-#            application/xml:
-#              schema:
-#                $ref: '#/components/schemas/ComponentExampleObjectPerson'
-#        400:
-#          description: failure
-#  /testResponse400StatusCode: #TODO: How should error responses be handled? Can they also have content?
-#    get:
-#      operationId: testResponseMultipleContent
-#      responses:
-#        400:
-#          description: error
+          description: success
 
 #    ########################## OTHER ##########################
 #  /testAllPossibleOperations: # TODO: What about options/head/trace?
@@ -210,3 +229,11 @@ components:
       schema:
         type: integer
         format: int64
+  requestBodies:
+    ComponentExampleRequestBody:
+      description: A JSON object containing information
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComponentExampleObjectPerson'
