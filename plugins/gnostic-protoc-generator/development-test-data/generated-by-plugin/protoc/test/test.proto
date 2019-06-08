@@ -14,11 +14,20 @@ service Test {
     };
   }
 
+  rpc TestResponseComponentReference (google.protobuf.Empty) returns (TestResponseComponentReferenceResponses) {
+    option (google.api.http) = {
+      get: "/testResponseComponentReference"
+    };
+  }
+
 }
 
 
 message TestResponseNativeResponses {
   string OK = 1;
+}
+message TestResponseComponentReferenceResponses {
+  ComponentExampleResponse OK = 1;
 }
 
 message ComponentExampleObjectPerson {
@@ -30,5 +39,13 @@ message ComponentExampleObjectPerson {
 
 message ComponentExampleParameter {
   int64 param1 = 1;
+}
+
+message ComponentExampleRequestBody {
+  ComponentExampleObjectPerson componentexampleobjectperson = 1;
+}
+
+message ComponentExampleResponse {
+  ComponentExampleObjectPerson ComponentExampleResponse = 1;
 }
 

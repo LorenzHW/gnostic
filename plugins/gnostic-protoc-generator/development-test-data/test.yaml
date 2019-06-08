@@ -135,32 +135,38 @@ paths:
   #                $ref: '#/components/schemas/ComponentExampleObjectPerson'
   #        400:
   #          description: failure
-  #  /testResponse400StatusCode: #TODO: How should error responses be handled? Can they also have content?
+  #  /testResponse400StatusCode: #TODO: How should error responses be handled?
   #    get:
-  #      operationId: testResponseMultipleContent
+  #      operationId: testResponse400StatusCode
   #      responses:
   #        400:
   #          description: error
+  /testResponseComponentReference:
+    get:
+      operationId: testResponseComponentReference
+      responses:
+        200:
+          $ref: '#/components/responses/ComponentExampleResponse'
   #    ########################## REQUESTBODY ##########################
-#  /testRequestBody:
+  #  /testRequestBody:
+  #    get:
+  #      operationId: testRequestBody
+  #      requestBody:
+  #        content:
+  #          application/json:
+  #            schema:
+  #              $ref: '#/components/schemas/ComponentExampleObjectPerson'
+  #      responses:
+  #        200:
+  #          description: success
+#  /testRequestBodyReference:
 #    get:
-#      operationId: testRequestBody
+#      operationId: testRequestBodyReference
 #      requestBody:
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/ComponentExampleObjectPerson'
+#        $ref: '#/components/requestBodies/ComponentExampleRequestBody'
 #      responses:
 #        200:
 #          description: success
-  /testRequestBodyReference:
-    get:
-      operationId: testRequestBodyReference
-      requestBody:
-        $ref: '#/components/requestBodies/ComponentExampleRequestBody'
-      responses:
-        200:
-          description: success
 
 #    ########################## OTHER ##########################
 #  /testAllPossibleOperations: # TODO: What about options/head/trace?
@@ -233,6 +239,13 @@ components:
     ComponentExampleRequestBody:
       description: A JSON object containing information
       required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ComponentExampleObjectPerson'
+  responses:
+    ComponentExampleResponse:
+      description: success
       content:
         application/json:
           schema:

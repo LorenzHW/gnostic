@@ -45,7 +45,7 @@
     },
     {
       "name": "ComponentExampleParameter",
-      "description": "ComponentExampleParameter holds parameters to ComponentExampleParameter",
+      "description": "ComponentExampleParameter is a parameter",
       "fields": [
         {
           "name": "param1",
@@ -61,6 +61,36 @@
       "typeName": "ComponentExampleParameter"
     },
     {
+      "name": "ComponentExampleRequestBody",
+      "fields": [
+        {
+          "name": "componentexampleobjectperson",
+          "type": "ComponentExampleObjectPerson",
+          "kind": 3,
+          "nativeType": "ComponentExampleObjectPerson",
+          "fieldName": "Componentexampleobjectperson",
+          "parameterName": "componentexampleobjectperson",
+          "serialize": true
+        }
+      ],
+      "typeName": "ComponentExampleRequestBody"
+    },
+    {
+      "name": "ComponentExampleResponse",
+      "description": "ComponentExampleResponse is a response",
+      "fields": [
+        {
+          "name": "ComponentExampleResponse",
+          "type": "ComponentExampleObjectPerson",
+          "kind": 3,
+          "nativeType": "ComponentExampleObjectPerson",
+          "fieldName": "ComponentExampleResponse",
+          "parameterName": "componentExampleResponse"
+        }
+      ],
+      "typeName": "ComponentExampleResponse"
+    },
+    {
       "name": "TestResponseNativeResponses",
       "description": "TestResponseNativeResponses holds responses of TestResponseNative",
       "fields": [
@@ -73,6 +103,21 @@
         }
       ],
       "typeName": "TestResponseNativeResponses"
+    },
+    {
+      "name": "TestResponseComponentReferenceResponses",
+      "description": "TestResponseComponentReferenceResponses holds responses of TestResponseComponentReference",
+      "fields": [
+        {
+          "name": "200",
+          "type": "ComponentExampleResponse",
+          "kind": 3,
+          "nativeType": "ComponentExampleResponse",
+          "fieldName": "OK",
+          "parameterName": "200"
+        }
+      ],
+      "typeName": "TestResponseComponentReferenceResponses"
     }
   ],
   "methods": [
@@ -85,6 +130,16 @@
       "processorName": "TestResponseNative",
       "clientName": "TestResponseNative",
       "responsesTypeName": "TestResponseNativeResponses"
+    },
+    {
+      "operation": "testResponseComponentReference",
+      "path": "/testResponseComponentReference",
+      "method": "GET",
+      "name": "TestResponseComponentReference",
+      "handlerName": "HandleTestResponseComponentReference",
+      "processorName": "TestResponseComponentReference",
+      "clientName": "TestResponseComponentReference",
+      "responsesTypeName": "TestResponseComponentReferenceResponses"
     }
   ]
 }
